@@ -154,18 +154,18 @@ function ctm(A::Array{S,4}, χ::Int; Cinit::Union{Nothing, Array{S,2}} = nothing
     iter = rotsymctmiterable(A, χ, Cinit, Tinit)
     iter = halt(iter, stop)
     iter = take(iter, maxit)
+    iter = enumerate(iter)
 
     if verbose
         @printf("\tn \t| time (ns)\t| diff\t\t| mag \n")
-        iter = enumerate(iter)
         iter = sample(iter, period)
         iter = stopwatch(iter)
         iter = tee(iter, disp)
         (_, (it, state)) = loop(iter)
-        return  (it, state)
     else
-        return (iter,loop(iter))
+        (it, state) = loop(iter)
     end
+    return  (it, state)
 end
 
 #= iterators from https://lostella.github.io/blog/2018/07/25/iterative-methods-done-right =#
