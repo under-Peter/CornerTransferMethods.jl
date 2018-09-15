@@ -59,6 +59,12 @@ mutable struct rotsymCTMState{S}
     Txl::Array{S,5}
     oldsvdvals::Vector{S}
     diffs::Vector{S}
+    CT::Array{S,3}
+    CTT::Array{S,4}
+    CxlZ::Array{S,3}
+    TxlZ::Array{S,4}
+    Ctmp::Array{S,2}
+    Ttmp::Array{S,3}
 end
 
 function iterate(iter::rotsymCTMIterable{S}) where {S}
@@ -76,9 +82,16 @@ function iterate(iter::rotsymCTMIterable{S}) where {S}
 
     Cxl   = Array{S,4}(undef, χ, d, d, χ)
     Txl   = Array{S,5}(undef, χ, d, d, d, χ)
+    CT = Array{S,3}(undef, χ, χ, d)
+    CTT  = Array{S,4}(undef, χ, d, d, χ)
+    CxlZ = Array{S,3}(undef, χ, d, χ)
+    TxlZ = Array{S,4}(undef, d, χ, d, χ)
+    Ctmp = Array{S,2}(undef, χ, χ)
+    Ttmp = Array{S,3}(undef, χ, d, χ)
     diffs = []
     oldsvdvals = zeros(χ)
-    state = rotsymCTMState{S}(C, T, Cxl, Txl, oldsvdvals, diffs)
+    state = rotsymCTMState{S}(C, T, Cxl, Txl, oldsvdvals, diffs,
+                              CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp)
     return state, state
 end
 
@@ -87,11 +100,14 @@ initializeT(A, χ) = randn(χ, size(A,1), χ) |> (x -> x + permutedims(x,(3,2,1)
 
 function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     @unpack A, d, χ = iter
-    @unpack C, T, Cxl, Txl, oldsvdvals, diffs = state
+    @unpack C, T, Cxl, Txl, oldsvdvals, diffs, CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp = state
 
     #grow
     @tensor begin
-        Cxl[o1, o2, o3, o4] = C[c1,c2] * T[o1,c4,c1] * T[c2,c3,o4] * A[o2,o3,c3,c4]
+        # Cxl[o1, o2, o3, o4] = C[c1,c2] * T[o1,c4,c1] * T[c2,c3,o4] * A[o2,o3,c3,c4]
+        CT[c2,o1,c4] = C[c1,c2] * T[o1,c4,c1]
+        CTT[o1,c4,c3,o4] = CT[c2,o1,c4] * T[c2,c3,o4]
+        Cxl[o1,o2,o3,o4] = CTT[o1,c4,c3,o4] * A[o2,o3,c3,c4]
         Txl[o1, o2, o3, o4, o5] = T[o1, c1, o5] * A[o2, o3, o4, c1]
     end
     #renormalize
@@ -100,14 +116,19 @@ function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     # @assert info.converged > χ "svd did not converge"
     # Z = reshape(hcat(U[1:χ]...), χ, d, χ)
     Z = reshape(U, χ, d, χ)
-    @tensor C[o1, o2] = Cxl[c1,c2,c3,c4] * Z[c1,c2,o1] * Z[c4,c3,o2]
-    @tensor T[o1, o2, o3] = Txl[c1,c2,o2,c3,c4] * Z[c1,c2,o1] * Z[c4,c3,o3]
+    @tensor begin
+        # C[o1, o2] = Cxl[c1,c2,c3,c4] * Z[c1,c2,o1] * Z[c4,c3,o2]
+        # T[o1, o2, o3] = Txl[c1,c2,o2,c3,c4] * Z[c1,c2,o1] * Z[c4,c3,o3]
+        CxlZ[o1,c3,c4] = Cxl[c1,c2,c3,c4] * Z[c1,c2,o1]
+        Ctmp[o1,o2]    = CxlZ[o1,c3,c4] * Z[c4,c3,o2]
+        TxlZ[o2,o1,c3,c4] = Txl[c1,c2,o2,c3,c4] * Z[c1,c2,o1]
+        Ttmp[o1,o2,o3]    = TxlZ[o2,o1,c3,c4] * Z[c4,c3,o3]
+    end
     #symmetrize
-
-    tmp = copy(C + permutedims(C,(2,1)))
-    C[:] = tmp
-    tmp2 = T + permutedims(T,(3,2,1))
-    T[:] = tmp2
+    C[:] = Ctmp
+    C .+= permutedims(Ctmp,(2,1))
+    T[:] = Ttmp
+    T .+= permutedims(Ttmp, (3,2,1))
     # vals, = svdsolve(C, χ, krylovdim = 32)
     # vals = vals[1:χ]
     vals = svdvals(C)[1:χ]
