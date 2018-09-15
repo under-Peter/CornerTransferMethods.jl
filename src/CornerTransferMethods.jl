@@ -1,4 +1,4 @@
-module CTM
+module CornerTransferMethods
 import Base: iterate
 using TensorOperations: @tensor, scalar
 using Parameters: @unpack
