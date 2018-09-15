@@ -1,11 +1,10 @@
 module CTM
 import Base: iterate
-using TensorOperations: @tensor
+using TensorOperations: @tensor, scalar
 using Parameters: @unpack
-# using KrylovKit: svdsolve
 using Base.Iterators: take, enumerate, rest
 using Printf: @printf
-using LinearAlgebra: tr, svd, svdvals
+using LinearAlgebra: svdvals!, svd!
 
 
 struct rotsymCTMIterable{S}
@@ -65,6 +64,7 @@ mutable struct rotsymCTMState{S}
     TxlZ::Array{S,4}
     Ctmp::Array{S,2}
     Ttmp::Array{S,3}
+    Cxlmat::Array{S,2}
 end
 
 function iterate(iter::rotsymCTMIterable{S}) where {S}
@@ -88,10 +88,11 @@ function iterate(iter::rotsymCTMIterable{S}) where {S}
     TxlZ = Array{S,4}(undef, d, χ, d, χ)
     Ctmp = Array{S,2}(undef, χ, χ)
     Ttmp = Array{S,3}(undef, χ, d, χ)
+    Cxlmat = Array{S,2}(undef, χ*d, d*χ)
     diffs = []
     oldsvdvals = zeros(χ)
     state = rotsymCTMState{S}(C, T, Cxl, Txl, oldsvdvals, diffs,
-                              CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp)
+                              CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp, Cxlmat)
     return state, state
 end
 
@@ -100,7 +101,7 @@ initializeT(A, χ) = randn(χ, size(A,1), χ) |> (x -> x + permutedims(x,(3,2,1)
 
 function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     @unpack A, d, χ = iter
-    @unpack C, T, Cxl, Txl, oldsvdvals, diffs, CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp = state
+    @unpack C, T, Cxl, Txl, oldsvdvals, diffs, CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp, Cxlmat = state
 
     #grow
     @tensor begin
@@ -112,7 +113,8 @@ function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     end
     #renormalize
     # vals, U, V, info  = svdsolve(reshape(Cxl, χ*d, d*χ), χ, krylovdim = 32)
-    U = svd(reshape(Cxl, χ*d, d*χ)).U[:,1:χ]
+    Cxlmat[:] = reshape(Cxl, χ*d, d*χ)
+    U = svd!(Cxlmat).U[:,1:χ]
     # @assert info.converged > χ "svd did not converge"
     # Z = reshape(hcat(U[1:χ]...), χ, d, χ)
     Z = reshape(U, χ, d, χ)
@@ -127,11 +129,12 @@ function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     #symmetrize
     C[:] = Ctmp
     C .+= permutedims(Ctmp,(2,1))
+    Ctmp[:] = C
     T[:] = Ttmp
     T .+= permutedims(Ttmp, (3,2,1))
     # vals, = svdsolve(C, χ, krylovdim = 32)
     # vals = vals[1:χ]
-    vals = svdvals(C)[1:χ]
+    vals = svdvals!(Ctmp)[1:χ]
     C    ./= vals[1]
     T    ./= vals[1]
     vals ./= vals[1]
@@ -284,9 +287,13 @@ isingpart(β) = partitionfun(ising, β)
 function magnetisation(state::rotsymCTMState)
     sz = [1 0; 0 -1]
     @unpack C,T = state
-    @tensor o[o1,o2] := C[c1,c2] * C[c2,c3] * T[c5,o1,c3] *
-                        C[c5,c7] * C[c7,c8] * T[c8,o2,c1];
-    return tr(sz * o)/ tr(o)
+    @tensor begin
+        o[o1,o2] := C[c1,c2] * C[c2,c3] * T[c5,o1,c3] *
+                    C[c5,c7] * C[c7,c8] * T[c8,o2,c1]
+        v[] := o[c1,c2] * sz[c2,c1]
+        n[] := o[c1,c1]
+    end
+    return scalar(v)/scalar(n)
 end
 
 
