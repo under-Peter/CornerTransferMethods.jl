@@ -91,7 +91,7 @@ function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
 
     #grow
     @tensor begin
-        Cxl[o1, o2, o3, o4] = C[c1,c2] * T[o1,c4,c1] * A[o2,o3,c3,c4] * T[c2,c3,o4]
+        Cxl[o1, o2, o3, o4] = C[c1,c2] * T[o1,c4,c1] * T[c2,c3,o4] * A[o2,o3,c3,c4]
         Txl[o1, o2, o3, o4, o5] = T[o1, c1, o5] * A[o2, o3, o4, c1]
     end
     #renormalize
