@@ -6,6 +6,9 @@ using Base.Iterators: take, enumerate, rest
 using Printf: @printf
 using LinearAlgebra: svdvals!, svd!
 
+export ctm, magnetisation, isingpart
+export rotsymCTMState
+
 
 struct rotsymCTMIterable{S}
     A::Array{S,4}
@@ -168,7 +171,7 @@ function ctm(A::Array{S,4}, χ::Int; Cinit::Union{Nothing, Array{S,2}} = nothing
     else
         (it, state) = loop(iter)
     end
-    return  (it, state)
+    return  (it, (state.C, state.T))
 end
 
 #= iterators from https://lostella.github.io/blog/2018/07/25/iterative-methods-done-right =#
@@ -284,9 +287,11 @@ ising(mag) = (x...) -> ising(mag, x...)
 
 isingpart(β) = partitionfun(ising, β)
 
-function magnetisation(state::rotsymCTMState)
+magnetisation(state::rotsymCTMState) = magnetisation(state.C, state.T)
+magnetisation(CT::Tuple{Array{S,2},Array{S,3}}) where S = magnetisation(CT...)
+
+function magnetisation(C::Array{S,2}, T::Array{S,3}) where S
     sz = [1 0; 0 -1]
-    @unpack C,T = state
     @tensor begin
         o[o1,o2] := C[c1,c2] * C[c2,c3] * T[c5,o1,c3] *
                     C[c5,c7] * C[c7,c8] * T[c8,o2,c1]
