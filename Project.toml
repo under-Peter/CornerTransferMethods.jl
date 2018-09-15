@@ -1,4 +1,4 @@
-name = "CTM"
+name = "CornerTransferMethods"
 uuid = "a5db9168-b75b-11e8-33d3-07e6e360b576"
 authors = ["andreas <andreas.peter.ch@gmail.com>"]
 version = "0.1.0"
