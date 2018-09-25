@@ -121,7 +121,7 @@ function ctm(A::Array{S,4}, χ::Int; Cinit::Union{Nothing, Array{S,2}} = nothing
     disp(state) = @printf("%5d \t| %.3e | %.3e | %.3e\n", state[2][1], state[1]/1e9,
                             state[2][2].diffs[end], magnetisation(state[2][2]))
     iter = rotsymctmiterable(A, χ, Cinit, Tinit)
-    tol > 0 || (iter = halt(iter, stop))
+    tol > 0 && (iter = halt(iter, stop))
     iter = take(iter, maxit)
     iter = enumerate(iter)
 

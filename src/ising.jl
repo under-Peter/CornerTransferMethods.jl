@@ -1,4 +1,5 @@
-#ising-tensor
+const βc = log(1+sqrt(2))/2
+
 function partitionfun(h, β)
     tensor = Array{Float64, 4}(undef, 2,2,2,2)
     for i=1:2, j=1:2, k=1:2, l=1:2
