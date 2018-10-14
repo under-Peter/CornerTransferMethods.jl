@@ -4,7 +4,7 @@ using TensorOperations: @tensor, scalar
 using Parameters: @unpack
 using Base.Iterators: take, enumerate, rest
 using Printf: @printf
-using LinearAlgebra: svdvals!, svd!, eigen!
+using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian
 
 export ctm, magnetisation, isingpart
 export rotsymCTMState
@@ -67,8 +67,8 @@ function iterate(iter::rotsymCTMIterable{S}) where {S}
     return state, state
 end
 
-initializeC(A, χ) = randn(χ, χ) |> (x -> x + permutedims(x,(2,1)))
-initializeT(A, χ) = randn(χ, size(A,1), χ) |> (x -> x + permutedims(x,(3,2,1)))
+initializeC(A::Array{T}, χ) where T = rand(T,χ, χ) |> (x -> x + permutedims(x,(2,1)))
+initializeT(A::Array{T}, χ) where T = randn(T,χ, size(A,1), χ) |> (x -> x + permutedims(x,(3,2,1)))
 
 function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     @unpack A, d, χ = iter
@@ -84,7 +84,8 @@ function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     end
     #renormalize
     Cxlmat[:] = reshape(Cxl, χ*d, d*χ) * reshape(Cxl, χ*d, d*χ)'
-    U = eigen!(Cxlmat).vectors[:,end:-1:end-χ+1]
+    U = eigen!(Hermitian(Cxlmat)).vectors[:,end:-1:end-χ+1]
+
     Z = reshape(U, χ, d, χ)
     @tensor begin
         # C[o1, o2] = Cxl[c1,c2,c3,c4] * Z[c1,c2,o1] * Z[c4,c3,o2]
@@ -106,20 +107,21 @@ function iterate(iter::rotsymCTMIterable{S}, state::rotsymCTMState{S}) where S
     vals ./= vals[1]
 
     #compare
-    push!(diffs, sum(x -> x^2, oldsvdvals - vals))
+    push!(diffs, sum(abs, oldsvdvals - vals))
     oldsvdvals[:] = vals
     return state, state
 end
 
-function ctm(A::Array{S,4}, χ::Int; Cinit::Union{Nothing, Array{S,2}} = nothing,
+function ctm(A::Array{S,4}, Asz::Array{S,4}, χ::Int;
+                                    Cinit::Union{Nothing, Array{S,2}} = nothing,
                                     Tinit::Union{Nothing, Array{S,3}} = nothing,
-                                    tol::Float64 = 1e-9,
-                                    maxit::Int = 500,
-                                    period::Int = 10,
+                                    tol::Float64 = 1e-18,
+                                    maxit::Int = 5000,
+                                    period::Int = 100,
                                     verbose::Bool = true) where S
     stop(state) = length(state.diffs) > 1 && state.diffs[end] < tol
     disp(state) = @printf("%5d \t| %.3e | %.3e | %.3e\n", state[2][1], state[1]/1e9,
-                            state[2][2].diffs[end], magnetisation(state[2][2]))
+                            state[2][2].diffs[end], magnetisation(state[2][2].C,state[2][2].T,A,Asz))
     iter = rotsymctmiterable(A, χ, Cinit, Tinit)
     tol > 0 && (iter = halt(iter, stop))
     iter = take(iter, maxit)
@@ -138,6 +140,7 @@ function ctm(A::Array{S,4}, χ::Int; Cinit::Union{Nothing, Array{S,2}} = nothing
 end
 
 include("auxiliary-iterators.jl")
+export atens, asztens
 include("ising.jl")
 
 end # module
