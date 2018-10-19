@@ -27,9 +27,9 @@ version = "0.19.0"
 
 [[KrylovKit]]
 deps = ["LinearAlgebra", "Pkg", "Random", "Test"]
-git-tree-sha1 = "a8efa1e393e2d92378c0634219d4d0f0c624a2a9"
+git-tree-sha1 = "9c8e82de9c4ec317c831577aad3fdfbc12326d99"
 uuid = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
-version = "0.1.1"
+version = "0.1.2"
 
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
@@ -52,10 +52,10 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[OrderedCollections]]
-deps = ["Random", "Serialization", "Test"]
-git-tree-sha1 = "cc23c786049328c93138da14e7020a464d707a23"
+deps = ["Pkg", "Random", "Serialization", "Test"]
+git-tree-sha1 = "85619a3f3e17bb4761fe1b1fd47f0e979f964d5b"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "0.1.0"
+version = "1.0.2"
 
 [[Parameters]]
 deps = ["Markdown", "OrderedCollections", "Pkg", "REPL", "Test"]
@@ -96,15 +96,27 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
+[[TNTensors]]
+deps = ["LinearAlgebra", "TensorOperations", "TupleTools"]
+path = "/home/andreas/Dropbox/Strathclyde/SymmetricTensors/TNTensors.jl"
+uuid = "745a9c42-ba8f-11e8-245d-33de09cdb470"
+version = "0.1.0"
+
 [[TensorOperations]]
 deps = ["LinearAlgebra", "Random", "Test"]
-git-tree-sha1 = "139e0e0fbd0a38d4ae506c03d0448c22e6ef8ad4"
+git-tree-sha1 = "7ca18aa91655a19cdc32a9af6cf19c02a7e20810"
 uuid = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
-version = "0.7.0"
+version = "0.7.1"
 
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TupleTools]]
+deps = ["Random", "Test"]
+git-tree-sha1 = "781df0cfac68723c3800eb9344b85bd86f9e424b"
+uuid = "9d95972d-f1c8-5527-a6e0-b4b365fa01f6"
+version = "1.0.2"
 
 [[UUIDs]]
 deps = ["Random"]

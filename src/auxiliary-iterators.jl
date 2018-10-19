@@ -17,7 +17,7 @@ function iterate(iter::HaltingIterable, (instruction, state))
 end
 
 function dispatch(iter::HaltingIterable, next)
-    if next === nothing return nothing end
+    next == nothing && return nothing
     return next[1], (iter.fun(next[1]) ? :halt : :continue, next[2])
 end
 

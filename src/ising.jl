@@ -29,7 +29,7 @@ function atens(β)
     sβ = sqrt(sinh(β))
     Q = 1/sqrt(2) * [cβ+sβ cβ-sβ; cβ-sβ cβ+sβ]
     @tensor a[1,2,3,4] := a[-1,-2,-3,-4] * Q[-1,1] * Q[-2,2] * Q[-3,3] * Q[-4,4]
-    return a
+    return DTensor(a)
 end
 
 function asztens(β)
@@ -40,14 +40,16 @@ function asztens(β)
     sβ = sqrt(sinh(β))
     Q = 1/sqrt(2) * [cβ+sβ cβ-sβ; cβ-sβ cβ+sβ]
     @tensor a[1,2,3,4] := a[-1,-2,-3,-4] * Q[-1,1] * Q[-2,2] * Q[-3,3] * Q[-4,4]
-    return a
+    return DTensor(a)
 end
+
+atenses(β) = (atens(β), asztens(β))
 
 # isingpart(β) = partitionfun(ising, β)
 
 magnetisation(state::rotsymCTMState, a, asz) = magnetisation(state.C, state.T, a, asz)
 
-function magnetisation(C::Array{S,2}, T::Array{S,3}, a::Array{S,4}, asz::Array{S,4}) where S
+function magnetisation(C::AbstractTensor{S,2}, T::AbstractTensor{S,3}, a::AbstractTensor{S,4}, asz::AbstractTensor{S,4}) where S
     @tensor ctc[1,2,3] := C[1,-1] * T[-1,2,-2] * C[-2,3]
     @tensor begin
         mag[]  := ctc[-1,-2,-3] * T[-3,-4,-5] * ctc[-5,-6,-7] * T[-7,-8,-1] * asz[-2,-4,-6,-8]
