@@ -1,5 +1,13 @@
 const βc = log(1+sqrt(2))/2
 
+function magofβ(β)
+    if β > βc
+        (1-sinh(2*β)^-4)^(1/8)
+    else
+        0
+    end
+end
+
 # function partitionfun(h, β)
 #     tensor = Array{Float64, 4}(undef, 2,2,2,2)
 #     for i=1:2, j=1:2, k=1:2, l=1:2
