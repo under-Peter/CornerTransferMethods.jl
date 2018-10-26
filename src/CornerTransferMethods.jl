@@ -77,7 +77,7 @@ function iterate(iter::rotsymCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     end
 
     caches = initializeCaches(A, χ)
-    l = ifelse(C isa ZNTensor, 2 χ, χ)
+    l = ifelse(C isa ZNTensor, 2χ, χ)
     oldsvdvals = zeros(S,l)
     state = rotsymCTMState{S,TC,TT,TA,T5}(C, T, oldsvdvals, [], caches...)
     return state, state
