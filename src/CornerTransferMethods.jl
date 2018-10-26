@@ -7,8 +7,10 @@ using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!
 using TNTensors
 using TensorOperations: @tensor, scalar
 
-export ctm, magnetisation, isingpart
+export ctm, magnetisation, isingenvironment, isingenvironmentz2
 export rotsymCTMState
+export isingctm, isingctmz2
+export magofβ, β
 
 struct rotsymCTMIterable{T, TA <: AbstractTensor{T,4},
                             TC <: AbstractTensor{T,2},
@@ -75,7 +77,7 @@ function iterate(iter::rotsymCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     end
 
     caches = initializeCaches(A, χ)
-    l = length(diag(C))
+    l = ifelse(C isa ZNTensor, 2 χ, χ)
     oldsvdvals = zeros(S,l)
     state = rotsymCTMState{S,TC,TT,TA,T5}(C, T, oldsvdvals, [], caches...)
     return state, state
@@ -154,7 +156,7 @@ function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     end
     copyto!(Ctmp,C)
     _, s, = tensorsvd(Ctmp)
-    vals = sort!(diag(s))
+    vals = diag(s)
     maxval = maximum(vals)
     apply!(C, x -> x ./ maxval)
     apply!(T, x -> x ./ maxval)
@@ -167,7 +169,7 @@ function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
 end
 
 
-ctm(A::T, Asz::T, χ; kwargs...) where {T<:AbstractTensor} =  rotsymctm(A,Asz,χ;kwargs...)
+ctm(A::T, Asz::T, χ::Int; kwargs...) where {T<:AbstractTensor} =  rotsymctm(A,Asz,χ;kwargs...)
 
 function rotsymctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
@@ -198,6 +200,7 @@ function rotsymctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
     end
     return  (it, (state.C, state.T))
 end
+
 
 include("auxiliary-iterators.jl")
 export atens, asztens, atenses, atensesz2
