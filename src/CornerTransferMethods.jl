@@ -10,6 +10,8 @@ using TensorOperations: @tensor, scalar
 export ctm, magnetisation, isingenvironment, isingenvironmentz2
 export isingctm, isingctmz2, magofβ
 include("ctm.jl")
+export cornereoe, transfermat, clength
+include("auxiliary-functions.jl")
 export atens, asztens, atenses, atensesz2
 include("ising.jl")
 
