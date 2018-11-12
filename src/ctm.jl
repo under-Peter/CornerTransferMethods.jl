@@ -162,10 +162,11 @@ ctm(A::T, Asz::T, χ::Int; kwargs...) where {T<:AbstractTensor} =  rotsymctm(A,A
 function rotsymctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
                                     Tinit::Union{Nothing, AbstractTensor{S,3}} = nothing,
-                                    tol::Float64 = 1e-18,
+                                    tol::Float64 = 1e-15,
                                     maxit::Int = 5000,
                                     period::Int = 100,
-                                    verbose::Bool = true) where S
+                                    verbose::Bool = true,
+                                    log::Bool = true) where S
     stop(state) = length(state.diffs) > 1 && state.diffs[end] < tol
     disp(state) = @printf("%5d \t| %.3e | %.3e | %.3e\n",
                             state[2][1], state[1]/1e9,
@@ -186,5 +187,9 @@ function rotsymctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
     else
         (it, state) = loop(iter)
     end
-    return  (it, (state.C, state.T))
+    if log
+        return (state.C, state.T, (χ = χ, n_it = it, diffs = state.diffs))
+    end
+    return  (state.C, state.T)
+
 end

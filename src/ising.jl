@@ -65,7 +65,7 @@ function isingenvironmentz2(β::Float64, χ::Int)
     cβ = [sqrt(cosh(β))]
     sβ = [sqrt(sinh(β))]
     q[(0,0)] = reshape(sqrt(2) * cβ, 1,1)
-    q[(1,1)] = reshape(sqrt(2) * cβ, 1,1)
+    q[(1,1)] = reshape(sqrt(2) * sβ, 1,1)
     qχ[(0,0)] = zeros(Float64,χ,χ)
     qχ[(1,1)] = zeros(Float64,χ,χ)
     qχ[(0,0)][1] = sqrt(2) * cβ[1]
@@ -95,7 +95,11 @@ function isingmagtensorz2(β)
     b = ZNTensor{Float64,2,2}((0:1,0:1),([1,1],[1,1]),(1,-1))
     b[(0,0)] = sqrt(2) * reshape([sqrt(cosh(β))],1,1)
     b[(1,1)] = sqrt(2) * reshape([sqrt(sinh(β))],1,1)
+    # c = ZNTensor{Float64,2,2}((0:1,0:1),([1,1],[1,1]),(1,-1))
+    # c[(0,1)] = reshape([1],1,1)
+    # c[(1,0)] = reshape([1],1,1)
     @tensor a[o1,o2,o3,o4] := a[c1,c2,c3,c4] * b[o1,c1] * b[o2,c2] * b[o3,c3] * b[o4,c4]
+    # @tensor a[o1,o2,o3,o4] := a[o1,o2,c1,c2] * c[o3,c1] * c[o4,c2]
     return a
 end
 
@@ -117,17 +121,34 @@ function magnetisation(C::DTensor{S,2}, T::DTensor{S,3}, a::DTensor{S,4}, asz::D
 end
 
 function magnetisation(C::ZNTensor{S,2}, T::ZNTensor{S,3}, a::ZNTensor{S,4}, asz::ZNTensor{S,4}) where S
-    return 0
+    @tensor ctc[1,2,3] := C[1,-1] * T[-1,2,-2] * C[-2,3]
+    @tensor begin
+        mag[]  := ctc[-1,-2,-3] * T[-3,-4,-5] * ctc[-7,-6,-5] * T[-7,-8,-1] * asz[-2,-4,-6,-8]
+        norm[] := ctc[-1,-2,-3] * T[-3,-4,-5] * ctc[-5,-6,-7] * T[-7,-8,-1] * a[-2,-4,-6,-8]
+    end
+    return scalar(mag)/scalar(norm)
 end
 
 function isingctm(β, χ, fixed::Bool = true; kwargs...)
     cinit, tinit = isingenvironment(β, χ, fixed = fixed)
     a, asz = isingtensors(β)
-    (ctm(a, asz, χ; kwargs...)[2]..., a, asz)
+    if get(kwargs, :log, false)
+        c,t, info  = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+        info = (β = β, info...)
+        return (C = c, T = t, A = a, M = asz, ttype = :DTensor, info...)
+    end
+    c, t = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit ; kwargs...)
+    return (C = c, T = t, A = a, M = asz)
 end
 
 function isingctmz2(β, χ; kwargs...)
     cinit, tinit = isingenvironmentz2(β, χ)
     a, asz = isingtensorsz2(β)
-    (ctm(a, asz, χ; kwargs...)[2]..., a, asz)
+    if get(kwargs, :log, false)
+        c,t, info  = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+        info = (β = β, info...)
+        return (C = c, T = t, A = a, M = asz, ttype = :ZNTensor, info...)
+    end
+    c, t = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+    return (C = c, T = t, A = a, M = asz)
 end
