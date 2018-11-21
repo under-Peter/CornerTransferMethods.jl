@@ -162,7 +162,7 @@ ctm(A::T, Asz::T, χ::Int; kwargs...) where {T<:AbstractTensor} =  rotsymctm(A,A
 function rotsymctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
                                     Tinit::Union{Nothing, AbstractTensor{S,3}} = nothing,
-                                    tol::Float64 = 1e-15,
+                                    tol::Float64 = 1e-13,
                                     maxit::Int = 5000,
                                     period::Int = 100,
                                     verbose::Bool = true,
