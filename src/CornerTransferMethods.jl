@@ -3,9 +3,9 @@ import Base: iterate
 using Parameters: @unpack
 using Base.Iterators: take, enumerate, rest
 using Printf: @printf
-using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!
+using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!, diag
 using TNTensors
-using TensorOperations: @tensor, scalar
+using TensorOperations: @tensor, scalar, checked_similar_from_indices
 
 export ctm, magnetisation, isingenvironment, isingenvironmentz2
 export isingctm, isingctmz2, magofβ

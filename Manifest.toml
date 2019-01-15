@@ -15,9 +15,9 @@ version = "0.4.1"
 
 [[BinaryProvider]]
 deps = ["Libdl", "Pkg", "SHA", "Test"]
-git-tree-sha1 = "9930c1a6cd49d9fcd7218df6be417e6ae4f1468a"
+git-tree-sha1 = "055eb2690182ebc31087859c3dd8598371d3ef9e"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.2"
+version = "0.5.3"
 
 [[Dates]]
 deps = ["Printf"]
@@ -33,15 +33,15 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[JSON]]
 deps = ["Dates", "Distributed", "Mmap", "Sockets", "Test", "Unicode"]
-git-tree-sha1 = "fec8e4d433072731466d37ed0061b3ba7f70eeb9"
+git-tree-sha1 = "1f7a25b53ec67f5e9422f1f551ee216503f4a0fa"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.19.0"
+version = "0.20.0"
 
 [[KrylovKit]]
-deps = ["LinearAlgebra", "Random", "Test"]
-git-tree-sha1 = "9c8e82de9c4ec317c831577aad3fdfbc12326d99"
+deps = ["LinearAlgebra", "Printf", "Random", "Test"]
+git-tree-sha1 = "bb1a78642c3eb15b3b695545debad5205957c153"
 uuid = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
-version = "0.1.2"
+version = "0.2.0"
 
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
@@ -71,9 +71,9 @@ version = "1.0.2"
 
 [[Parameters]]
 deps = ["Markdown", "OrderedCollections", "REPL", "Test"]
-git-tree-sha1 = "40f540ec96e50c0b2b9efdb11b5e4d0c63f90923"
+git-tree-sha1 = "70bdbfb2bceabb15345c0b54be4544813b3444e4"
 uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
-version = "0.10.1"
+version = "0.10.3"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
@@ -108,17 +108,25 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
+[[Strided]]
+deps = ["LinearAlgebra", "Random", "Test", "TupleTools"]
+git-tree-sha1 = "e847369ec8911ee44773b7b9beb68d186fa7c65b"
+uuid = "5e0ebb24-38b0-5f93-81fe-25c709ecae67"
+version = "0.2.4"
+
 [[TNTensors]]
 deps = ["LinearAlgebra", "TensorOperations", "TupleTools"]
-path = "/home/andreas/Dropbox/Strathclyde/SymmetricTensors/TNTensors.jl"
+git-tree-sha1 = "f4ce2c4672ac8226f4dc6a52fc1983c2cc122747"
+repo-rev = "a3c97415d0b6b14b229e5ea467811d2feb474b26"
+repo-url = "https://github.com/under-Peter/TNTensors.jl"
 uuid = "745a9c42-ba8f-11e8-245d-33de09cdb470"
 version = "0.1.0"
 
 [[TensorOperations]]
-deps = ["LinearAlgebra", "Random", "Test"]
-git-tree-sha1 = "7ca18aa91655a19cdc32a9af6cf19c02a7e20810"
+deps = ["LinearAlgebra", "Random", "Strided", "Test", "TupleTools"]
+git-tree-sha1 = "68e5668e2a113a6f04f09e1cd8b163cf52c9a990"
 uuid = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
-version = "0.7.1"
+version = "1.0.1"
 
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]

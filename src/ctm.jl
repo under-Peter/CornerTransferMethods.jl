@@ -1,153 +1,96 @@
 include("auxiliary-iterators.jl")
-
-struct rotsymCTMIterable{T, TA <: AbstractTensor{T,4},
-                            TC <: AbstractTensor{T,2},
-                            TT <: AbstractTensor{T,3}}
+struct rotsymCTMIterable{T, TA <: AbstractTensor{T,4}, TC <: AbstractTensor{T,2}, TT <: AbstractTensor{T,3}}
     A::TA
     χ::Int
     Cinit::Union{TC, Nothing}
     Tinit::Union{TT, Nothing}
 end
 
-function rotsymctmiterable(A::AbstractTensor{T}, χ::Int, Cinit = nothing, Tinit = nothing) where T
-    tnt = typeof(A).name.wrapper
-    TC = tnt{T,2}
-    TT = tnt{T,3}
-    TA = tnt{T,4}
-    rotsymCTMIterable{T,TA,TC,TT}(A, χ, Cinit, Tinit)
+function rotsymctmiterable(A::DTensor{T,4}, χ::Int,
+        Cinit = nothing, Tinit = nothing) where T
+    rotsymCTMIterable{T,DTensor{T,4},DTensor{T,2},DTensor{T,3}}(A, χ, Cinit, Tinit)
 end
 
-function rotsymctmiterable(A::ZNTensor{T,N,M}, χ::Int, Cinit = nothing, Tinit = nothing) where {T,N,M}
-    TC = ZNTensor{T,2,M}
-    TT = ZNTensor{T,3,M}
-    TA = ZNTensor{T,4,M}
+function rotsymctmiterable(A::DASTensor{T,4,SYM,CHS,SS,CH}, χ::Int,
+        Cinit = nothing, Tinit = nothing) where {T,N,SYM,CHS,SS,CH}
+    TC = DASTensor{T,2,SYM,CHS,SS,CH}
+    TT = DASTensor{T,3,SYM,CHS,SS,CH}
+    TA = DASTensor{T,4,SYM,CHS,SS,CH}
     rotsymCTMIterable{T,TA,TC,TT}(A, χ, Cinit, Tinit)
 end
 
 #mutable
-struct rotsymCTMState{S, TS2 <: AbstractTensor,
-                            TS3 <: AbstractTensor,
-                            TS4 <: AbstractTensor,
-                            TS5 <: AbstractTensor}
-    C::TS2
-    T::TS3
+struct rotsymCTMState{S, TA <: AbstractTensor, TC <: AbstractTensor, TT <: AbstractTensor}
+    C::TC
+    T::TT
     oldsvdvals::Vector{S}
     diffs::Vector{S}
-    Cxl::TS4
-    Txl::TS5
-    CT::TS3
-    CTT::TS4
-    CxlZ::TS3
-    TxlZ::TS4
-    Ctmp::TS2
-    Ttmp::TS3
 end
 
 
 function iterate(iter::rotsymCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
-    _znhelper(a::ZNTensor{T,N,M}) where {T,N,M} = M
     @unpack A, χ, Cinit, Tinit = iter
-    if Cinit == nothing
-        C = initializeC(A, χ)
-    else
-        C = copy(Cinit)
-    end
-    if Tinit == nothing
-        T = initializeT(A, χ)
-    else
-        T = copy(Tinit)
-    end
+    C = Cinit == nothing ? initializeC(A,χ) : deepcopy(Cinit)
+    T = Tinit == nothing ? initializeT(A,χ) : deepcopy(Tinit)
 
-    if TA <: ZNTensor
-        T5 = ZNTensor{S,5,_znhelper(A)}
-    else
-        T5 = typeof(A).name.wrapper{S,5}
-    end
-
-    caches = initializeCaches(A, χ)
-    l = ifelse(C isa ZNTensor, 2χ, χ)
+    l = ifelse(C isa DASTensor, 2χ, χ)
     oldsvdvals = zeros(S,l)
-    state = rotsymCTMState{S,TC,TT,TA,T5}(C, T, oldsvdvals, [], caches...)
+    state = rotsymCTMState{S,TA,TC,TT}(C, T, oldsvdvals, [])
     return state, state
 end
 
-function initializeCaches(A::DTensor{S,4}, χ) where {S}
-    d = size(A,1)
-    Cxl  = DTensor{S,4}((χ, d, d, χ))
-    Txl  = DTensor{S,5}((χ, d, d, d, χ))
-    CT   = DTensor{S,3}((χ, χ, d))
-    CTT  = DTensor{S,4}((χ, d, d, χ))
-    CxlZ = DTensor{S,3}((χ, d, χ))
-    TxlZ = DTensor{S,4}((d, χ, d, χ), )
-    Ctmp = DTensor{S,2}((χ, χ))
-    Ttmp = DTensor{S,3}((χ, d, χ))
-    return (Cxl, Txl, CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp)
-end
-initializeC(A::DTensor{T}, χ) where T = DTensor(rand(T,χ, χ) |> (x -> x + permutedims(x,(2,1))))
-initializeT(A::DTensor{T}, χ) where T = DTensor(randn(T,χ, size(A,1), χ) |> (x -> x + permutedims(x,(3,2,1))))
+initializeC(A::DTensor{T}, χ) where T =
+    DTensor(rand(T,χ, χ) |> (x -> x + permutedims(x,(2,1))))
+initializeT(A::DTensor{T}, χ) where T =
+    DTensor(randn(T,χ, size(A,1), χ) |> (x -> x + permutedims(x,(3,2,1))))
 
-function initializeCaches(A::ZNTensor{S,4,N}, χ) where {S,N}
-    ds = sizes(A,1)
-    χs = [χ for i in 1:N]
-    Cxl  = ZNTensor{S,4,N}((χs, ds, ds, χs),(1,1,1,1))
-    Txl  = ZNTensor{S,5,N}((χs, ds, ds, ds, χs),(1,1,1,1,1))
-    CT   = ZNTensor{S,3,N}((χs, χs, ds),(1,1,-1))
-    CTT  = ZNTensor{S,4,N}((χs, ds, ds, χs),(1,1,1,1))
-    CxlZ = ZNTensor{S,3,N}((χs, ds, χs),(1,1,1))
-    TxlZ = ZNTensor{S,4,N}((ds, χs, ds, χs), (1,-1,1,1))
-    Ctmp = ZNTensor{S,2,N}((χs, χs),(1,1))
-    Ttmp = ZNTensor{S,3,N}((χs, ds, χs),(-1,1,-1))
-    return (Cxl, Txl, CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp)
-end
-
-function initializeC(A::ZNTensor{T,4,N}, χ) where {T,N}
-    χs = [χ for i in 1:N]
-    C1 = rand(ZNTensor{T,2,N}, (χs,χs), (-1,-1))
-    @tensor C2[1,2] := C1[1,2] + C1[2,1]
-    return C2
+function initializeC(A::DASTensor{T,4}, χ) where T
+    C = checked_similar_from_indices(nothing, T, (1,2), A, :Y)
+    s1, s2 = sizes(C)
+    s1 .= χ
+    s2 .= χ
+    initwithrand!(C)
+    @tensor C[1,2] := C[1,2] + C[2,1]
+    return C
  end
 
-function initializeT(A::ZNTensor{T,4,N}, χ) where {T,N}
-    ds = sizes(A,1)
-    χs = [χ for i in 1:N]
-    T1 = rand(ZNTensor{T,3,N}, (χs,ds,χs), (1,-1,1))
-    @tensor T2[1,2,3] := T1[1,2,3] + T1[3,2,1]
-    return T2
+function initializeT(A::DASTensor{S,4}, χ) where S
+    T = checked_similar_from_indices(nothing, S, (1,2), (1,), (1,3,2), A, A, :N, :Y)
+    s1, s2, s3 = sizes(T)
+    s1 .= χ
+    s3 .= χ
+    initwithrand!(T)
+    @tensor T[1,2,3] := T[1,2,3] + T[3,2,1]
+    return T
  end
 
 function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     @unpack A, χ = iter
-    @unpack C, T, Cxl, Txl, oldsvdvals, diffs, CT, CTT, CxlZ, TxlZ, Ctmp, Ttmp = state
-
+    @unpack C, T, oldsvdvals, diffs = state
     #grow
     @tensor begin
-        CT[c2,o1,c4] = C[c1,c2] * T[o1,c4,c1]
-        CTT[o1,c4,c3,o4] = CT[c2,o1,c4] * T[c2,c3,o4]
-        Cxl[o1,o2,o3,o4] = CTT[o1,c4,c3,o4] * A[o2,o3,c3,c4]
-        Txl[o1, o2, o3, o4, o5] = T[o1, c1, o5] * A[o2, o3, o4, c1]
+        Cp[1,2,3,4]   := C[-1,-2]   * T[1,-3,-1] *
+                         T[-2,-4,4] * A[2,3,-3,-4]
+        Tp[1,2,3,4,5] := T[1,-1,5] * A[2,3,-1,4]
     end
-    #renormalize
-    Cxlmat, inverter = fuselegs(Cxl, ((1,2),(3,4)))
-    U, = tensorsvd(Cxlmat, svdcutfunction = svdcutfun_maxχ(χ))
-    Z  = splitlegs(U, ((1,1,1),(1,1,2),2), inverter)
 
+    #renormalize
+    Z = tensorsvd(Cp, ((1,2),(3,4)), svdtrunc = svdtrunc_maxχ(χ))[1]
     @tensor begin
-        CxlZ[o1,c3,c4] = Cxl[c1,c2,c3,c4] * Z[c1,c2,o1]
-        Ctmp[o1,o2]    = CxlZ[o1,c3,c4] * Z[c4,c3,o2]
-        TxlZ[o2,o1,c3,c4] = Txl[c1,c2,o2,c3,c4] * Z'[c1,c2,o1]
-        Ttmp[o1,o2,o3]    = TxlZ[o2,o1,c3,c4] * Z'[c4,c3,o3]
+        Ctmp[1,2] := Cp[-1,-2,-3,-4]  * Z[-1,-2,1] * Z'[-4,-3,2]
+        Ttmp[1,2,3] := Tp[-1,-2,2,-3,-4] * Z'[-1,-2,1] * Z[-4,-3,3]
     end
+
     #symmetrize
     @tensor begin
-        C[o1,o2] = Ctmp[o1,o2] + Ctmp[o2,o1]
-        T[o1,o2,o3] = Ttmp[o1,o2,o3] + Ttmp[o3,o2,o1]
+        C[1,2]   = Ctmp[1,2] + Ctmp[2,1]
+        T[1,2,3] = Ttmp[1,2,3] + Ttmp[3,2,1]
     end
-    copyto!(Ctmp,C)
-    _, s, = tensorsvd(Ctmp)
+    _, s, = tensorsvd(C)
     vals = diag(s)
     maxval = maximum(vals)
-    apply!(C, x -> x ./ maxval)
-    apply!(T, x -> x ./ maxval)
+    apply!(C, x -> x .= x ./ maxval)
+    apply!(T, x -> x .= x ./ maxval)
     normalize!(vals,1)
 
     #compare
@@ -155,7 +98,6 @@ function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     oldsvdvals[:] = vals
     return state, state
 end
-
 
 ctm(A::T, Asz::T, χ::Int; kwargs...) where {T<:AbstractTensor} =  rotsymctm(A,Asz,χ;kwargs...)
 

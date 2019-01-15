@@ -11,10 +11,10 @@ end
 function transfermat(t::AbstractTensor{T,3}) where T
     @tensor tt[1,2,3,4] := t[1,-1,3] * t'[2,-1,4]
     tmat = fuselegs(tt,((1,2),(3,4)))[1]
-    return toarray(tmat)
+    return tmat
 end
 
 function clength(t::AbstractTensor{T,3}) where T
-    evs = eigs(transfermat(t), nev=2)[1]
+    evs = eigs(transfermat(toarray(t)), nev=2)[1]
     return 1/log(2,evs[1]/evs[2])
 end
