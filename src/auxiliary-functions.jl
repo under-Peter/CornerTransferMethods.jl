@@ -13,8 +13,17 @@ function transfermat(t::AbstractTensor{T,3}) where T
     tmat = fuselegs(tt,((1,2),(3,4)))[1]
     return tmat
 end
-
+#
 function clength(t::AbstractTensor{T,3}) where T
-    evs = eigs(transfermat(toarray(t)), nev=2)[1]
-    return 1/log(2,evs[1]/evs[2])
+    tfun = transferop(t)
+    v0 = checked_similar_from_indices(nothing, T, (1,3),(),t,:Y)
+    initwithrand!(v0)
+    e1, e2 = eigsolve(tfun, v0, 2, :LM, ishermitian = true)[1][1:2]
+    return 1/log(2,e1/e2)
+end
+#
+function transferop(t::AbstractTensor{<:Any,3})
+    let t = t
+        x -> @tensor tx[1,2] := t[1,-3,-1] * x[-1,-2] * t'[2,-3,-2]
+    end
 end
