@@ -1,5 +1,8 @@
 const βc = log(1+sqrt(2))/2
 
+βofh(h) = βc/asinh(1) * asinh(sqrt(1/h))
+hofβ(β) = sinh(β * asinh(1)/βc)^(-2)
+
 function magofβ(β)
     if β > βc
         (1-sinh(2*β)^-4)^(1/8)
