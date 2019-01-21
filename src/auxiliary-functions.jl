@@ -27,3 +27,10 @@ function transferop(t::AbstractTensor{<:Any,3})
         x -> @tensor tx[1,2] := t[1,-3,-1] * x[-1,-2] * t'[2,-3,-2]
     end
 end
+
+function transferopevals(t::AbstractTensor{T,3}, n::Int) where T
+    tfun = transferop(t)
+    v0 = checked_similar_from_indices(nothing, T, (1,3),(),t,:Y)
+    initwithrand!(v0)
+    return eigsolve(tfun, v0, n, :LM, ishermitian = true)[1][1:n]
+end
