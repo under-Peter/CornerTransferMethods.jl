@@ -70,8 +70,8 @@ function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     #grow
     @tensor begin
         Cp[1,2,3,4]   := C[-1,-2]   * T[1,-3,-1] *
-                         T[-2,-4,4] * A[2,3,-3,-4]
-        Tp[1,2,3,4,5] := T[1,-1,5] * A[2,3,-1,4]
+                         T[-2,-4,4] * A[2,3,-4,-3]
+        Tp[1,2,3,4,5] := T[1,-1,5]  * A[3,4,-1,2]
     end
 
     #renormalize
