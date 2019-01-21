@@ -104,12 +104,13 @@ magnetisation((C,T,a,asz)) = magnetisation(C,T,a,asz)
 
 function magnetisation(C::AbstractTensor{S,2}, T::AbstractTensor{S,3},
         a::AbstractTensor{S,4}, asz::AbstractTensor{S,4}) where S
-    @tensor ctc[1,2,3] := C[1,-1] * T[-1,2,-2] * C[-2,3]
     @tensor begin
-        mag[]  := ctc[-1,-2,-3] * T[-3,-4,-5] * ctc[-7,-6,-5] * T[-7,-8,-1] * asz[-2,-4,-6,-8]
-        norm[] := ctc[-1,-2,-3] * T[-3,-4,-5] * ctc[-5,-6,-7] * T[-7,-8,-1] * a[-2,-4,-6,-8]
+        env[1,2,3,4] := C[-8, -1] * T[-1,3,-2] * C[-2,-3] * T[-3,2,-4] *
+            C[-4,-5] * T[-5,1,-6] * C[-6,-7] * T[-7,4,-8]
+        mag  = env[-1,-2,-3,-4] * asz[-1,-2,-3,-4]
+        norm = env[-1,-2,-3,-4] * a[-1,-2,-3,-4]
     end
-    return scalar(mag)/scalar(norm)
+    return mag/norm
 end
 
 function isingctm(β, χ, fixed::Bool = true; kwargs...)
