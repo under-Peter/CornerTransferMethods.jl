@@ -5,7 +5,7 @@ using Base.Iterators: take, enumerate, rest
 using Printf: @printf
 using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!, diag
 using KrylovKit: eigsolve
-using TNTensors
+using TensorNetworkTensors
 using TensorOperations: @tensor, scalar, checked_similar_from_indices
 
 export ctm, magnetisation, isingenvironment, isingenvironmentz2

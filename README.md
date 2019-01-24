@@ -4,4 +4,4 @@ indices for ctm:
 
 ![](indices.png)
 
-requires `TNTensors.jl`
+requires `TensorNetworkTensors.jl`
