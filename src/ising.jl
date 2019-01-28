@@ -136,3 +136,14 @@ function isingctmz2(β, χ; kwargs...)
     c, t = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
     return (C = c, T = t, A = a, M = asz)
 end
+
+function σxtensor()
+    σx = DASTensor{Float64,2}(
+            ZN{2}(),
+            (Z2Charges(), Z2Charges()),
+            ([1,1], [1,1]),
+            InOut(1,-1))
+    σx[DASSector(Z2Charge(1), Z2Charge(0))] = reshape([1], 1, 1)
+    σx[DASSector(Z2Charge(0), Z2Charge(1))] = reshape([1], 1, 1)
+    return σx
+end
