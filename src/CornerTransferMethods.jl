@@ -15,6 +15,7 @@ export cornereoe, transfermat, clength, transferopevals
 include("auxiliary-functions.jl")
 export atens, asztens, atenses, atensesz2
 export βofh, hofβ
+export σxtensor, σztensor
 include("ising.jl")
 
 end # module

@@ -147,3 +147,14 @@ function σxtensor()
     σx[DASSector(Z2Charge(0), Z2Charge(1))] = reshape([1], 1, 1)
     return σx
 end
+
+function σztensor()
+    σz = DASTensor{Float64,2}(
+            ZN{2}(),
+            (Z2Charges(), Z2Charges()),
+            ([1,1], [1,1]),
+            InOut(1,-1))
+    σz[DASSector(Z2Charge(0), Z2Charge(0))] = reshape([1], 1, 1)
+    σz[DASSector(Z2Charge(1), Z2Charge(1))] = reshape([-1], 1, 1)
+    return σz
+end
