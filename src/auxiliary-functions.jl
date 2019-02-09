@@ -16,7 +16,7 @@ end
 
 function transfermat(t::AbstractTensor{T,3}, pop::AbstractTensor{T,2}) where T
     @tensor tt[1,2,3,4] := t[1,-1,3] * pop[-1,-2] * t'[2,-2,4]
-    tmat = fuselegs(tt,((1,2),(3,4)))[1]
+    tmat = fuselegs(tt,((1,2),(3,4)),InOut(1,-1))[1]
     return tmat
 end
 #
@@ -29,6 +29,7 @@ function clength(t::AbstractTensor{T,3}) where T
 end
 
 const ξoft = clength
+
 #
 function transferop(t::AbstractTensor{<:Any,3})
     let t = t
@@ -45,6 +46,14 @@ end
 function transferopevals(t::AbstractTensor{T,3}, n::Int, pop::Union{AbstractTensor{T,2},Nothing} = nothing) where T
     tfun = pop == nothing ? transferop(t) : transferop(t,pop)
     v0 = checked_similar_from_indices(nothing, T, (1,3),(),t,:Y)
+    initwithrand!(v0)
+    return eigsolve(tfun, v0, n, :LR, ishermitian = true)[1][1:n]
+end
+
+function transferopevals(t::DASTensor{T,3}, n::Int, pop::Union{DASTensor{T,2},Nothing} = nothing; ch::DASCharge = zero(chargetype(t))) where T
+    tfun = pop == nothing ? transferop(t) : transferop(t,pop)
+    v0 = checked_similar_from_indices(nothing, T, (1,3),(),t,:Y)
+    setcharge!(v0, ch)
     initwithrand!(v0)
     return eigsolve(tfun, v0, n, :LR, ishermitian = true)[1][1:n]
 end
