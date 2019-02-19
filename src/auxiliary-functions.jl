@@ -43,19 +43,21 @@ function transferop(t::AbstractTensor{<:Any,3}, pop::AbstractTensor{<:Any,2})
     end
 end
 
-function transferopevals(t::AbstractTensor{T,3}, n::Int, pop::Union{AbstractTensor{T,2},Nothing} = nothing) where T
+function transferopevals(t::AbstractTensor{T,3}, n::Int,
+        pop::Union{AbstractTensor{T,2},Nothing} = nothing;
+        ch::Union{DASCharge, Nothing} = nothing) where T
     tfun = pop == nothing ? transferop(t) : transferop(t,pop)
     v0 = checked_similar_from_indices(nothing, T, (1,3),(),t,:Y)
-    initwithrand!(v0)
-    return eigsolve(tfun, v0, n, :LR, ishermitian = true)[1][1:n]
-end
-
-function transferopevals(t::DASTensor{T,3}, n::Int, pop::Union{DASTensor{T,2},Nothing} = nothing; ch::DASCharge = zero(chargetype(t))) where T
-    tfun = pop == nothing ? transferop(t) : transferop(t,pop)
-    v0 = checked_similar_from_indices(nothing, T, (1,3),(),t,:Y)
-    setcharge!(v0, ch)
+    ch === nothing || setcharge!(v0, ch)
     initwithrand!(v0)
     return eigsolve(tfun, v0, n, :LR, ishermitian = true)[1][1:n]
 end
 
 const ξsoft = transferopevals
+
+isrotsym(a::AbstractTensor{<:Any,4}) = a ≈tensorcopy(a,(1,2,3,4),(2,3,4,1))
+function istcsym(a::AbstractTensor{<:Any,4})
+    a ≈ tensorcopy(a,(1,2,3,4), (1,3,2,4))' || false
+    a ≈ tensorcopy(a,(1,2,3,4), (4,2,3,1))' || false
+    true
+end

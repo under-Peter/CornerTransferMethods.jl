@@ -99,18 +99,19 @@ isingmagtensorz2(β) = isingtensorz2(β)
 isingtensors(β) = (isingtensor(β), isingmagtensor(β))
 isingtensorsz2(β) = (isingtensorz2(β), isingmagtensorz2(β))
 
-magnetisation(state::rotsymCTMState, a, asz) = magnetisation(state.C, state.T, a, asz)
+magnetisation(state, a, asz) = magnetisation(environment(state), a, asz)
 magnetisation((C,T,a,asz)) = magnetisation(C,T,a,asz)
+
+function magnetisation(env::AbstractTensor{<:Any,4}, a, asz)
+    @tensor mag  = env[-1,-2,-3,-4] * asz[-1,-2,-3,-4]
+    @tensor norm = env[-1,-2,-3,-4] * a[-1,-2,-3,-4]
+    return mag/norm
+end
 
 function magnetisation(C::AbstractTensor{S,2}, T::AbstractTensor{S,3},
         a::AbstractTensor{S,4}, asz::AbstractTensor{S,4}) where S
-    @tensor begin
-        env[1,2,3,4] := C[-8, -1] * T[-1,3,-2] * C[-2,-3] * T[-3,2,-4] *
-            C[-4,-5] * T[-5,1,-6] * C[-6,-7] * T[-7,4,-8]
-        mag  = env[-1,-2,-3,-4] * asz[-1,-2,-3,-4]
-        norm = env[-1,-2,-3,-4] * a[-1,-2,-3,-4]
-    end
-    return mag/norm
+    env = environment(ntuple(i -> C,4), ntuple(i -> T,4))
+    return magnetisation(env, a, asz)
 end
 
 function isingctm(β, χ, fixed::Bool = true; kwargs...)
@@ -157,4 +158,19 @@ function σztensor()
     σz[DASSector(Z2Charge(0), Z2Charge(0))] = reshape([1], 1, 1)
     σz[DASSector(Z2Charge(1), Z2Charge(1))] = reshape([-1], 1, 1)
     return σz
+end
+
+environment(state::CTMState) = environment(state.Cs, state.Ts)
+environment(state::rotsymCTMState) =
+    environment(ntuple(i -> state.C,4), ntuple(i->state.T,4))
+function environment(state::transconjCTMState)
+    C = state.C
+    T1, T2 = state.Ts
+    environment((C,C',C,C'), (T1, T2', T1', T2))
+end
+function environment((C1,C2,C3,C4), (T1,T2,T3,T4))
+    @tensor env[1,2,3,4] := C1[-8, -1] * T1[-1,3,-2] *  C2[-2,-3] *
+                            T4[-7,4,-8] * #=A[1,2,3,4]=#T2[-3,2,-4] *
+                            C4[-6,-7] *  T3[-5,1,-6] *  C3[-4,-5]
+    return env
 end
