@@ -1,3 +1,14 @@
+#=
+    Following the description in
+        _Simulation of two-dimensional quantum systems on an infinite lattice revisited:
+        Corner Transfer matrix for tensor contraction_
+    by Orus and Vidal
+
+    Implemented here is the directional variant of the CTMRG as outlined
+    on page 2 and in Fig2.
+    DOI: 10.1103/PhysRevB.80.094403
+=#
+
 struct CTMIterable{T,
         TA <: AbstractTensor{T,4},
         TC <: AbstractTensor{T,2},
@@ -43,7 +54,6 @@ function iterate(iter::CTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     return state, state
 end
 
-#PRB 80 094403 - 2009
 function iterate(iter::CTMIterable, state::CTMState{S,TA,TC,TT}) where {S,TA,TC,TT}
     @unpack A, χ = iter
     @unpack Cs, Ts, oldsvdvals, diffs, n_it = state
@@ -56,7 +66,6 @@ function iterate(iter::CTMIterable, state::CTMState{S,TA,TC,TT}) where {S,TA,TC,
           |      |      |
         [C4] - [T3] - [C3]
     =#
-    #as in arxiv:0905.3225
 
     #leftmove
     leftmove!((C1,T4,C4),(T1,A,T3),χ)

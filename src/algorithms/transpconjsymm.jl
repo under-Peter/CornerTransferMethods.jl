@@ -1,3 +1,13 @@
+#=
+    Following the description in
+        _Exploring corner transfer matrices and corner tensors for the classical
+        simulation of quantum lattice systems_
+    by Orus
+
+    this implementation follows the description in III.B, specifically
+    the simplified one-directional 1D-method as in e.g. Fig 12, 13
+    DOI: 10.1103/PhysRevB.85.205117
+=#
 struct transconjCTMIterable{T,
         TA<:AbstractTensor{T,4},
         TC<:AbstractTensor{T,2},
