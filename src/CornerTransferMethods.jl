@@ -2,7 +2,7 @@ module CornerTransferMethods
 import Base: iterate
 using Parameters: @unpack
 using Base.Iterators: take, enumerate, rest
-using Printf: @printf
+using Printf: @printf, @sprintf
 using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!, diag, norm
 using LinearAlgebra: diagm, ishermitian, eigen
 using KrylovKit: eigsolve

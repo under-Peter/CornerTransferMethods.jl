@@ -91,19 +91,6 @@ function iterate(iter::CTMIterable, state::CTMState{S,TA,TC,TT}) where {S,TA,TC,
     return state, state
 end
 
-function tensoreig(a::DTensor{T,2}; svdtrunc = length) where T
-    # ishermitian(a.array) || error()
-    evals, evecs = eigen(Hermitian(a.array))
-    p = sortperm(evals, by=abs, rev=true)
-    evals = evals[p]
-    evecs = evecs[:,p]
-    # a = evecs * diagm(evals) * evecs'
-    cutoff = svdtrunc(evals)
-    E = evecs[:,1:cutoff]
-    d = diagm(0 => evals[1:cutoff])
-    return (DTensor{T,2}(E), DTensor{T,2}(d), DTensor{T,2}(E'))
-end
-
 function leftmove!((C1,T4,C4), (T1,A,T3), χ)
     #=
     leftmove:
@@ -128,7 +115,7 @@ function leftmove!((C1,T4,C4), (T1,A,T3), χ)
     end
 
     CCpCCmat, reshaper = fuselegs(CCpCC,((1,2),(3,4)))
-    E, = tensoreig(CCpCCmat,svdtrunc = svdtrunc_maxχ(χ))
+    E, = tensoreig(CCpCCmat,truncfun = svdtrunc_maxχ(χ))
     U = splitlegs(E, ((1,1,1),(1,1,2),2), reshaper...)
 
     @tensor begin
@@ -168,7 +155,7 @@ function rightmove!((C3,T2,C2),(T3,A,T1),χ)
     end
 
     CCpCCmat, reshaper = fuselegs(CCpCC,((1,2),(3,4)))
-    E, = tensoreig(CCpCCmat,svdtrunc = svdtrunc_maxχ(χ))
+    E, = tensoreig(CCpCCmat,truncfun = svdtrunc_maxχ(χ))
     U = splitlegs(E, ((1,1,1),(1,1,2),2), reshaper...)
 
     @tensor begin
@@ -207,7 +194,7 @@ function upmove!((C1,T1,C2),(T4,A,T2),χ)
     end
 
     CCpCCmat, reshaper = fuselegs(CCpCC,((1,2),(3,4)))
-    E, = tensoreig(CCpCCmat,svdtrunc = svdtrunc_maxχ(χ))
+    E, = tensoreig(CCpCCmat,truncfun = svdtrunc_maxχ(χ))
     U = splitlegs(E, ((1,1,1),(1,1,2),2), reshaper...)
 
     @tensor begin
@@ -246,7 +233,7 @@ function downmove!((C4,T3,C3),(T4,A,T2),χ)
     end
 
     CCpCCmat, reshaper = fuselegs(CCpCC,((1,2),(3,4)))
-    E, = tensoreig(CCpCCmat,svdtrunc = svdtrunc_maxχ(χ))
+    E, = tensoreig(CCpCCmat,truncfun = svdtrunc_maxχ(χ))
     U = splitlegs(E, ((1,1,1),(1,1,2),2), reshaper...)
 
     @tensor begin
