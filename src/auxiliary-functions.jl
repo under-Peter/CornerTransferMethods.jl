@@ -57,7 +57,7 @@ const ξsoft = transferopevals
 
 isrotsym(a::AbstractTensor{<:Any,4}) = a ≈tensorcopy(a,(1,2,3,4),(2,3,4,1))
 function istcsym(a::AbstractTensor{<:Any,4})
-    a ≈ tensorcopy(a,(1,2,3,4), (1,3,2,4))' || false
-    a ≈ tensorcopy(a,(1,2,3,4), (4,2,3,1))' || false
+    a ≈ tensorcopy(a,(1,2,3,4), (1,3,2,4))' || return false
+    a ≈ tensorcopy(a,(1,2,3,4), (4,2,3,1))' || return false
     true
 end
