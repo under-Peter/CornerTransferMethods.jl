@@ -1,5 +1,7 @@
 include("auxiliary-iterators.jl")
 
+abstract type AbstractCTMIterable end
+abstract type AbstractCTMState end
 include("algorithms/nosym.jl")
 include("algorithms/rotsym.jl")
 include("algorithms/transpconjsymm.jl")
@@ -10,8 +12,7 @@ initializeT(A::DTensor{T}, χ) where T = DTensor(rand(T,χ, size(A,1), χ) .-1)
 function initializeC(A::DASTensor{T,4}, χ) where T
     C = checked_similar_from_indices(nothing, T, (1,2), A, :Y)
     s1, s2 = sizes(C)
-    s1 .= χ
-    s2 .= χ
+    s1 .= s2 .= χ
     initwithrand!(C)
     return C
  end
@@ -19,12 +20,12 @@ function initializeC(A::DASTensor{T,4}, χ) where T
 function initializeT(A::DASTensor{S,4}, χ) where S
     T = checked_similar_from_indices(nothing, S, (1,2), (1,), (1,3,2), A, A, :N, :Y)
     s1, s2, s3 = sizes(T)
-    s1 .= χ
-    s3 .= χ
+    s1 .= s3 .= χ
     initwithrand!(T)
     return T
  end
 
+isconverged(state, tol) = !isempty(state.diffs) &&  state.diffs[end] < tol
 
 function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
@@ -34,32 +35,33 @@ function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     period::Int = 100,
                                     verbose::Bool = true,
                                     log::Bool = true) where S
-    stop(state) = length(state.diffs) > 1 && state.diffs[end] < tol
+    stop(state) = isconverged(state,tol)
+    foo(state)  = magnetisation(state, A, Asz)
     disp(state) = @printf("%5d \t| %.3e | %.3e \t| %.3e |\n",#"\t %.5e \n",
-                            state[2][1], state[1]/1e9,
-                            state[2][2].diffs[end],
-                            magnetisation(state[2][2],A,Asz))
+                            state[2].n_it[], state[1]/1e9,
+                            state[2].diffs[end],
+                            foo(state[2]))
 
     iter = ctmiterable(A, χ, Cinit, Tinit)
-    isrotsym(A) && (iter = rotsymctmiterable(A, χ, Cinit, Tinit))
     istcsym(A)  && (iter = transconjctmiterable(A, χ, Cinit, Tinit))
-    iter = ctmiterable(A, χ, Cinit, Tinit)
-    tol > 0 && (iter = halt(iter, stop))
+    isrotsym(A) && (iter = rotsymctmiterable(A, χ, Cinit, Tinit))
+
+    #initialize
+    st,  = iterate(iter)
+    iter = rest(iter, st)
+
+    iter = halt(iter, stop)
     iter = take(iter, maxit)
-    iter = enumerate(iter)
 
     if verbose
-        @printf("\tn \t| time (s)\t| diff\t\t\t| mag \t\t\t| eoe\n")
+        @printf("\tn \t| time (s)\t| diff\t\t\t| mag \n")
         iter = sample(iter, period)
         iter = stopwatch(iter)
         iter = tee(iter, disp)
-        (_, (it, state)) = loop(iter)
+        (_, state) = loop(iter)
     else
-        (it, state) = loop(iter)
+        state = loop(iter)
     end
-    # if log
-    #     return (state.C, state.T, (χ = χ, n_it = it, diffs = state.diffs))
-    # end
-    return  state #(state.C, state.T)
 
+    return  state #(state.C, state.T)
 end

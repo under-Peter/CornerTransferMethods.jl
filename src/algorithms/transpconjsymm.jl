@@ -1,7 +1,7 @@
 struct transconjCTMIterable{T,
         TA<:AbstractTensor{T,4},
         TC<:AbstractTensor{T,2},
-        TT<:AbstractTensor{T,3}}
+        TT<:AbstractTensor{T,3}} <: AbstractCTMIterable
     A::TA
     χ::Int
     Cinit::Union{TC,Nothing}
@@ -23,11 +23,15 @@ function transconjctmiterable(A::DASTensor{T,4,SYM,CHS,SS,CH}, χ::Int,
     transconjCTMIterable{T,TA,TC,TT}(A, χ, Cinit, Tsinit)
 end
 
-struct transconjCTMState{S, TA <: AbstractTensor, TC <: AbstractTensor, TT <: AbstractTensor}
+struct transconjCTMState{S,
+        TA <: AbstractTensor,
+        TC <: AbstractTensor,
+        TT <: AbstractTensor} <: AbstractCTMState
     C::TC
     Ts::Tuple{TT,TT}
     oldsvdvals::Vector{S}
     diffs::Vector{S}
+    n_it::Ref{Int}
 end
 
 
@@ -38,13 +42,13 @@ function iterate(iter::transconjCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
 
     l = ifelse(C isa DASTensor, 2χ, χ)
     oldsvdvals = zeros(S,l)
-    state = transconjCTMState{S,TA,TC,TT}(C, Ts, oldsvdvals, [])
+    state = transconjCTMState{S,TA,TC,TT}(C, Ts, oldsvdvals, [], Ref(0))
     return state, state
 end
 
 function iterate(iter::transconjCTMIterable, state::transconjCTMState)
     @unpack A, χ = iter
-    @unpack C, Ts, oldsvdvals, diffs = state
+    @unpack C, Ts, oldsvdvals, diffs, n_it = state
     T1, T2 = Ts
 
     xmove!((C,T2),(T1,A), χ)
@@ -60,6 +64,8 @@ function iterate(iter::transconjCTMIterable, state::transconjCTMState)
     #compare
     push!(diffs, sum(abs, oldsvdvals - vals))
     oldsvdvals[:] = vals
+    n_it[] += 1
+
     return state, state
 end
 

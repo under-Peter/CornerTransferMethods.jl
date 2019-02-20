@@ -1,4 +1,7 @@
-struct rotsymCTMIterable{T, TA <: AbstractTensor{T,4}, TC <: AbstractTensor{T,2}, TT <: AbstractTensor{T,3}}
+struct rotsymCTMIterable{T,
+        TA <: AbstractTensor{T,4},
+         TC <: AbstractTensor{T,2},
+         TT <: AbstractTensor{T,3}} <: AbstractCTMIterable
     A::TA
     χ::Int
     Cinit::Union{TC,Nothing}
@@ -17,11 +20,15 @@ function rotsymctmiterable(A::DASTensor{T,4,SYM,CHS,SS,CH}, χ::Int,
     rotsymCTMIterable{T,TA,TC,TT}(A, χ, Cinit, Tinit)
 end
 
-struct rotsymCTMState{S, TA <: AbstractTensor, TC <: AbstractTensor, TT <: AbstractTensor}
+struct rotsymCTMState{S,
+        TA <: AbstractTensor,
+        TC <: AbstractTensor,
+        TT <: AbstractTensor} <: AbstractCTMState
     C::TC
     T::TT
     oldsvdvals::Vector{S}
     diffs::Vector{S}
+    n_it::Ref{Int}
 end
 
 
@@ -42,13 +49,13 @@ function iterate(iter::rotsymCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
 
     l = ifelse(C isa DASTensor, 2χ, χ)
     oldsvdvals = zeros(S,l)
-    state = rotsymCTMState{S,TA,TC,TT}(C, T, oldsvdvals, [])
+    state = rotsymCTMState{S,TA,TC,TT}(C, T, oldsvdvals, [], Ref(0))
     return state, state
 end
 
 function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     @unpack A, χ = iter
-    @unpack C, T, oldsvdvals, diffs = state
+    @unpack C, T, oldsvdvals, diffs, n_it = state
     #grow
     @tensor begin
         Cp[1,2,3,4]   := C[-1,-2]   * T[1,-3,-1] *
@@ -78,5 +85,7 @@ function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     #compare
     push!(diffs, sum(abs, oldsvdvals - vals))
     oldsvdvals[:] = vals
+    n_it[] += 1
+    
     return state, state
 end

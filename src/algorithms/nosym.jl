@@ -1,4 +1,7 @@
-struct CTMIterable{T, TA <: AbstractTensor{T,4}, TC <: AbstractTensor{T,2}, TT <: AbstractTensor{T,3}}
+struct CTMIterable{T,
+        TA <: AbstractTensor{T,4},
+        TC <: AbstractTensor{T,2},
+        TT <: AbstractTensor{T,3}} <: AbstractCTMIterable
     A::TA
     χ::Int
     Csinit::Union{NTuple{4,TC},Nothing}
@@ -17,11 +20,15 @@ function ctmiterable(A::DASTensor{T,4,SYM,CHS,SS,CH}, χ::Int,
     CTMIterable{T,TA,TC,TT}(A, χ, Csinit, Tsinit)
 end
 
-struct CTMState{S, TA <: AbstractTensor, TC <: AbstractTensor, TT <: AbstractTensor}
+struct CTMState{S,
+        TA <: AbstractTensor,
+        TC <: AbstractTensor,
+        TT <: AbstractTensor} <: AbstractCTMState
     Cs::NTuple{4,TC}
     Ts::NTuple{4,TT}
     oldsvdvals::Vector{S}
     diffs::Vector{S}
+    n_it::Ref{Int}
 end
 
 
@@ -32,14 +39,14 @@ function iterate(iter::CTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
 
     l = ifelse(TA <: DASTensor, 2χ, χ)
     oldsvdvals = zeros(S,l)
-    state = CTMState{S,TA,TC,TT}(Cs, Ts, oldsvdvals, [])
+    state = CTMState{S,TA,TC,TT}(Cs, Ts, oldsvdvals, [], Ref(0))
     return state, state
 end
 
 #PRB 80 094403 - 2009
 function iterate(iter::CTMIterable, state::CTMState{S,TA,TC,TT}) where {S,TA,TC,TT}
     @unpack A, χ = iter
-    @unpack Cs, Ts, oldsvdvals, diffs = state
+    @unpack Cs, Ts, oldsvdvals, diffs, n_it = state
     C1, C2, C3, C4 = Cs
     T1, T2, T3, T4 = Ts
     #=
@@ -70,6 +77,8 @@ function iterate(iter::CTMIterable, state::CTMState{S,TA,TC,TT}) where {S,TA,TC,
     #compare
     push!(diffs, sum(abs, oldsvdvals - vals))
     oldsvdvals[:] = vals
+    n_it[] += 1
+
     return state, state
 end
 
@@ -232,9 +241,9 @@ function downmove!((C4,T3,C3),(T4,A,T2),χ)
     U = splitlegs(E, ((1,1,1),(1,1,2),2), reshaper...)
 
     @tensor begin
-        C4[1,2]   = C4p[-1,-2,2] * U'[-1,-2,1]
-        T3[1,2,3] = U'[-1,-2,1] * T3p[-1,-2,2,-3,-4] * U[-4,-3,3]
         C3[1,2]   = C3p[1,-1,-2] * U[-2,-1,2]
+        T3[1,2,3] = U'[-1,-2,1] * T3p[-1,-2,2,-3,-4] * U[-4,-3,3]
+        C4[1,2]   = C4p[-1,-2,2] * U'[-1,-2,1]
     end
 
     mval = maximum(diag(tensorsvd(C4)[2]))
