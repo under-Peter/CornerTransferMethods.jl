@@ -30,31 +30,56 @@ isconverged(state, tol) = !isempty(state.diffs) &&  state.diffs[end] < tol
 function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
                                     Tinit::Union{Nothing, AbstractTensor{S,3}} = nothing,
-                                    tol::Float64 = 1e-13,
-                                    maxit::Int = 5000,
-                                    period::Int = 100,
-                                    verbose::Bool = true,
-                                    log::Bool = true) where S
-    stop(state) = isconverged(state,tol)
-    foo(state)  = magnetisation(state, A, Asz)
-    disp(state) = @printf("%5d \t| %.3e | %.3e \t| %.3e |\n",#"\t %.5e \n",
-                            state[2].n_it[], state[1]/1e9,
-                            state[2].diffs[end],
-                            foo(state[2]))
-
+                                    kwargs...
+                                    # tol::Float64 = 1e-13,
+                                    # maxit::Int = 5000,
+                                    # period::Int = 100,
+                                    # verbose::Bool = true,
+                                    # log::Bool = true) where S
+                                    ) where S
     iter = ctmiterable(A, χ, Cinit, Tinit)
     istcsym(A)  && (iter = transconjctmiterable(A, χ, Cinit, Tinit))
     isrotsym(A) && (iter = rotsymctmiterable(A, χ, Cinit, Tinit))
+    obs(state) = magnetisation(state, A, Asz)
+
+    ctm_kernel(iter; obs = "mag" => obs, kwargs...)
+end
+
+function ctm_kernel(iter::AbstractCTMIterable,
+                    state::Union{Nothing, AbstractCTMState} = nothing;
+                    tol::Float64 = 1e-13,
+                    maxit::Int = 5000,
+                    period::Int = 100,
+                    verbose::Bool = true,
+                    obs = nothing)
+    stop(state) = isconverged(state,tol)
+    function disp(state)
+        ns = lpad(state[2].n_it[],7)
+        ts = lpad(@sprintf("%.3E", state[1]/1e9), 13)
+        ds = lpad(@sprintf("%.3E", state[2].diffs[end]),13)
+        print(ns, " |", ts, " |", ds, " |")
+
+        if !isnothing(obs)
+            x = @sprintf("%.3E", obs[2](state[2]))
+            print(lpad(x, 13)," |")
+        end
+        println()
+    end
 
     #initialize
-    st,  = iterate(iter)
-    iter = rest(iter, st)
+    isnothing(state) && (state = iterate(iter)[1])
+    iter = rest(iter, state)
 
     iter = halt(iter, stop)
     iter = take(iter, maxit)
 
     if verbose
-        @printf("\tn \t| time (s)\t| diff\t\t\t| mag \n")
+        print(lpad("n",6),"  |")
+        print(lpad("t(s)", 12),"  |")
+        print(lpad("diffs", 12),"  |")
+        !isnothing(obs) && print(lpad(obs[1], 12),"  |")
+        println()
+
         iter = sample(iter, period)
         iter = stopwatch(iter)
         iter = tee(iter, disp)
@@ -63,5 +88,5 @@ function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
         state = loop(iter)
     end
 
-    return  state #(state.C, state.T)
+    return  state
 end
