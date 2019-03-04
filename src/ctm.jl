@@ -7,7 +7,7 @@ include("algorithms/rotsym.jl")
 include("algorithms/transpconjsymm.jl")
 
 initializeC(A::DTensor{T}, χ) where T = DTensor(rand(T,χ, χ) .- 1)
-initializeT(A::DTensor{T}, χ) where T = DTensor(rand(T,χ, size(A,1), χ) .-1)
+initializeT(A::DTensor{T}, χ, s = 1) where T = DTensor(rand(T,χ, size(A,s), χ) .-1)
 
 function initializeC(A::DASTensor{T,4}, χ) where T
     C = checked_similar_from_indices(nothing, T, (1,2), A, :Y)
@@ -17,8 +17,8 @@ function initializeC(A::DASTensor{T,4}, χ) where T
     return C
  end
 
-function initializeT(A::DASTensor{S,4}, χ) where S
-    T = checked_similar_from_indices(nothing, S, (1,2), (1,), (1,3,2), A, A, :N, :Y)
+function initializeT(A::DASTensor{S,4}, χ, s=1) where S
+    T = checked_similar_from_indices(nothing, S, (1,2), (s,), (1,3,2), A, A, :N, :Y)
     s1, s2, s3 = sizes(T)
     s1 .= s3 .= χ
     initwithrand!(T)

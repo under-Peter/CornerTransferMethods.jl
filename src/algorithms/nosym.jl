@@ -46,7 +46,7 @@ end
 function iterate(iter::CTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     @unpack A, χ, Tsinit, Csinit = iter
     Cs = Csinit == nothing ? ntuple(i -> initializeC(A,χ), 4) : deepcopy(Csinit)
-    Ts = Tsinit == nothing ? ntuple(i -> initializeT(A,χ), 4) : deepcopy(Tsinit)
+    Ts = Tsinit == nothing ? ntuple(i -> initializeT(A,χ,i), 4) : deepcopy(Tsinit)
 
     l = ifelse(TA <: DASTensor, 2χ, χ)
     oldsvdvals = zeros(real(S),l)

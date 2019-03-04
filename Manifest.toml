@@ -112,13 +112,13 @@ uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[Strided]]
 deps = ["LinearAlgebra", "Random", "Test", "TupleTools"]
-git-tree-sha1 = "d9d0d8586d777e77654709cc872b6de15f8e2578"
+git-tree-sha1 = "ca8aedf595c92f04929cb6d33c18624f991b194b"
 uuid = "5e0ebb24-38b0-5f93-81fe-25c709ecae67"
-version = "0.2.5"
+version = "0.2.6"
 
 [[TensorNetworkTensors]]
 deps = ["LinearAlgebra", "Parameters", "TensorOperations", "TupleTools"]
-git-tree-sha1 = "88f76a4f3908d0a901cd0ce83678abbb662ef4e8"
+git-tree-sha1 = "bd729c35fe293460a6279e5c278a09e3c3c55972"
 repo-rev = "master"
 repo-url = "git@github.com:under-Peter/TensorNetworkTensors.jl.git"
 uuid = "9cd545fa-50e6-5d0b-b05c-fbfd5125ba2b"
@@ -126,9 +126,9 @@ version = "0.1.0"
 
 [[TensorOperations]]
 deps = ["LinearAlgebra", "Random", "Strided", "Test", "TupleTools"]
-git-tree-sha1 = "b5b20e1133bcad4f0f1beb4e4849d5e607c32eeb"
+git-tree-sha1 = "7cd4a4404c851e8ef8f26bd3c3569bec5130ddec"
 uuid = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
-version = "1.0.3"
+version = "1.0.4"
 
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
