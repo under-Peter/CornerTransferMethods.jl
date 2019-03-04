@@ -49,8 +49,8 @@ function iterate(iter::CTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     Ts = Tsinit == nothing ? ntuple(i -> initializeT(A,χ), 4) : deepcopy(Tsinit)
 
     l = ifelse(TA <: DASTensor, 2χ, χ)
-    oldsvdvals = zeros(S,l)
-    state = CTMState{S,TA,TC,TT}(Cs, Ts, oldsvdvals, [], Ref(0))
+    oldsvdvals = zeros(real(S),l)
+    state = CTMState{real(S),TA,TC,TT}(Cs, Ts, oldsvdvals, [], Ref(0))
     return state, state
 end
 

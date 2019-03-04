@@ -48,8 +48,8 @@ function iterate(iter::rotsymCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     end
 
     l = ifelse(C isa DASTensor, 2χ, χ)
-    oldsvdvals = zeros(S,l)
-    state = rotsymCTMState{S,TA,TC,TT}(C, T, oldsvdvals, [], Ref(0))
+    oldsvdvals = zeros(real(S),l)
+    state = rotsymCTMState{real(S),TA,TC,TT}(C, T, oldsvdvals, [], Ref(0))
     return state, state
 end
 
@@ -86,6 +86,6 @@ function iterate(iter::rotsymCTMIterable, state::rotsymCTMState)
     push!(diffs, sum(abs, oldsvdvals - vals))
     oldsvdvals[:] = vals
     n_it[] += 1
-    
+
     return state, state
 end

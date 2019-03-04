@@ -51,8 +51,8 @@ function iterate(iter::transconjCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     Ts = isnothing(Tsinit) ? (initializeT(A,χ),initializeT(A,χ)) : Tsinit
 
     l = ifelse(C isa DASTensor, 2χ, χ)
-    oldsvdvals = zeros(S,l)
-    state = transconjCTMState{S,TA,TC,TT}(C, Ts, oldsvdvals, [], Ref(0))
+    oldsvdvals = zeros(real(S),l)
+    state = transconjCTMState{real(S),TA,TC,TT}(C, Ts, oldsvdvals, [], Ref(0))
     return state, state
 end
 
