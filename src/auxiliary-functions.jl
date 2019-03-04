@@ -55,8 +55,27 @@ end
 
 const ξsoft = transferopevals
 
-isrotsym(a::AbstractTensor{<:Any,4}) = a ≈tensorcopy(a,(1,2,3,4),(2,3,4,1))
+function isrotsym(a::AbstractTensor{<:Any,4})
+    if a isa DTensor
+        s = size(a)
+    elseif a isa DASTensor
+        s = sizes(a)
+    else
+        error()
+    end
+    s == s[[4,1,2,3]] || return false
+    a ≈ tensorcopy(a,(1,2,3,4),(2,3,4,1))
+end
 function istcsym(a::AbstractTensor{<:Any,4})
+    if a isa DTensor
+        s = size(a)
+    elseif a isa DASTensor
+        s = sizes(a)
+    else
+        error()
+    end
+    s == s[[1,3,2,4]] || return false
+    s == s[[4,2,3,1]] || return false
     a ≈ tensorcopy(a,(1,2,3,4), (1,3,2,4))' || return false
     a ≈ tensorcopy(a,(1,2,3,4), (4,2,3,1))' || return false
     true
