@@ -114,27 +114,29 @@ function magnetisation(C::AbstractTensor{S,2}, T::AbstractTensor{S,3},
     return magnetisation(env, a, asz)
 end
 
-function isingctm(β, χ, fixed::Bool = true; kwargs...)
+function isingctm(β, χ, fixed::Bool = true; log::Bool = false, kwargs...)
     cinit, tinit = isingenvironment(β, χ, fixed = fixed)
     a, asz = isingtensors(β)
-    if get(kwargs, :log, false)
-        c,t, info  = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
-        info = (β = β, info...)
-        return (C = c, T = t, A = a, M = asz, ttype = :DTensor, info...)
+    if log
+        st = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+        info = (β = β, χ = χ, n_it = st.n_it[], diffs = st.diffs)
+        return (C = st.C, T = st.T, A = a, M = asz, ttype = :DTensor, info...)
     end
-    c, t = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit ; kwargs...)
-    return (C = c, T = t, A = a, M = asz)
+    st = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit ; kwargs...)
+    c, t = st.C, st.T
+    return (C = st.C, T = st.T, A = a, M = asz)
 end
 
-function isingctmz2(β, χ; kwargs...)
+function isingctmz2(β, χ; log::Bool = false, kwargs...)
     cinit, tinit = isingenvironmentz2(β, χ)
     a, asz = isingtensorsz2(β)
-    if get(kwargs, :log, false)
-        c,t, info  = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
-        info = (β = β, info...)
-        return (C = c, T = t, A = a, M = asz, ttype = :ZNTensor, info...)
+    if log
+        st = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+        info = (β = β, χ = χ, n_it = st.n_it[], diffs = st.diffs)
+        return (C = st.C, T = st.T, A = a, M = asz, ttype = :ZNTensor, info...)
     end
-    c, t = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+    st = ctm(a, asz, χ, Cinit = cinit, Tinit = tinit; kwargs...)
+    c, t = st.C, st.T
     return (C = c, T = t, A = a, M = asz)
 end
 
