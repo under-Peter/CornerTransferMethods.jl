@@ -11,6 +11,7 @@ using TensorOperations: @tensor, scalar, checked_similar_from_indices, tensoradd
 
 export ctm, magnetisation, isingenvironment, isingenvironmentz2
 export isingctm, isingctmz2, magofβ
+export ctm_kernel, ctmiterable, rotsymctmiterable, transconjctmiterable
 include("ctm.jl")
 export cornereoe, transfermat, clength, transferopevals
 include("auxiliary-functions.jl")

@@ -31,16 +31,11 @@ function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
                                     Tinit::Union{Nothing, AbstractTensor{S,3}} = nothing,
                                     kwargs...
-                                    # tol::Float64 = 1e-13,
-                                    # maxit::Int = 5000,
-                                    # period::Int = 100,
-                                    # verbose::Bool = true,
-                                    # log::Bool = true) where S
                                     ) where S
     iter = ctmiterable(A, χ, Cinit, Tinit)
     istcsym(A)  && (iter = transconjctmiterable(A, χ, Cinit, Tinit))
     isrotsym(A) && (iter = rotsymctmiterable(A, χ, Cinit, Tinit))
-    obs(state) = magnetisation(state, A, Asz)
+    obs(state) = real(magnetisation(state, A, Asz))
 
     ctm_kernel(iter; obs = "mag" => obs, kwargs...)
 end
