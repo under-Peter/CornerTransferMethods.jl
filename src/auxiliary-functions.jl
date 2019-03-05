@@ -76,7 +76,6 @@ function istcsym(a::AbstractTensor{<:Any,4})
     end
     s == s[[1,3,2,4]] || return false
     s == s[[4,2,3,1]] || return false
-    a ≈ tensorcopy(a,(1,2,3,4), (1,3,2,4))' || return false
-    a ≈ tensorcopy(a,(1,2,3,4), (4,2,3,1))' || return false
-    true
+    a ≈ tensorcopy(conj(a),(1,2,3,4), (1,4,3,2)) || return false
+    a ≈ tensorcopy(conj(a),(1,2,3,4), (3,2,1,4))
 end
