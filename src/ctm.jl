@@ -44,6 +44,21 @@ function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
     ctm_kernel(iter; obs = "mag" => obs, kwargs...)
 end
 
+"""
+    ctm_kernel(iter::AbstractCTMIterable [, state ; tol=1e-13, maxit=10^5, period=100, verbose=true, obs=nothing)
+iterates `iter` according to the options given. If a `state` is provided,
+iteration starts with that state, otherwise `iter` is used as the start.
+Keywords:
+    - `tol`: if `tol` > 0, it is used to decide when the algorithm has converged;
+       if the last element of the field `diffs` of the iterator is smaller than `tol`,
+       the algorithm stops
+    - `maxit`: maximum number of iterations
+    - `period`: If `verbose==true`, information will be printed everye `period` iterations
+    - `verbose`: if true, every `period` iterations the number of steps, the time taken since the
+      start of the calculation, the last value of the `diffs` field and possibly an `obs` will be printed.
+    - `obs`: a `Pair` of a string and a function on the state which will print the value of that function
+      if `verbose == true`
+"""
 function ctm_kernel(iter::AbstractCTMIterable,
                     state::Union{Nothing, AbstractCTMState} = nothing;
                     tol::Float64 = 1e-13,
