@@ -118,7 +118,7 @@ version = "0.2.6"
 
 [[TensorNetworkTensors]]
 deps = ["LinearAlgebra", "Parameters", "TensorOperations", "TupleTools"]
-git-tree-sha1 = "bd729c35fe293460a6279e5c278a09e3c3c55972"
+git-tree-sha1 = "fa18f1ee41842be304d056729c1acea536c52b57"
 repo-rev = "master"
 repo-url = "git@github.com:under-Peter/TensorNetworkTensors.jl.git"
 uuid = "9cd545fa-50e6-5d0b-b05c-fbfd5125ba2b"
@@ -136,9 +136,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TupleTools]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "781df0cfac68723c3800eb9344b85bd86f9e424b"
+git-tree-sha1 = "b006524003142128cc6d36189dce337729aa0050"
 uuid = "9d95972d-f1c8-5527-a6e0-b4b365fa01f6"
-version = "1.0.2"
+version = "1.1.0"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]

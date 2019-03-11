@@ -47,7 +47,7 @@ end
 
 function iterate(iter::transconjCTMIterable{S,TA,TC,TT}) where {S,TA,TC,TT}
     @unpack A, χ, Cinit, Tsinit = iter
-    C = isnothing(Cinit) ? initializeC(A,χ) : Cinit
+    C  = isnothing(Cinit)  ? initializeC(A,χ) : Cinit
     Ts = isnothing(Tsinit) ? (initializeT(A,χ),initializeT(A,χ)) : Tsinit
 
     l = ifelse(C isa DASTensor, 2χ, χ)
