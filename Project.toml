@@ -12,6 +12,7 @@ Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 TensorNetworkTensors = "9cd545fa-50e6-5d0b-b05c-fbfd5125ba2b"
 TensorOperations = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TupleTools = "9d95972d-f1c8-5527-a6e0-b4b365fa01f6"
 
 [extras]

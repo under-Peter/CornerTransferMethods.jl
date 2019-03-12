@@ -20,4 +20,7 @@ export βofh, hofβ
 export σxtensor, σztensor
 include("ising.jl")
 
+export ozofβ, oxxofβ, tfisingpropagator, tfisinghamiltonian, tfisingctm, mag, energy
+include("isingmpo.jl")
+
 end # module
