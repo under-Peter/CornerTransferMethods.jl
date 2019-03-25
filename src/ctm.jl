@@ -25,7 +25,7 @@ function initializeT(A::DASTensor{S,4}, χ, s=1) where S
     return T
  end
 
-isconverged(state, tol) = !isempty(state.diffs) &&  state.diffs[end] < tol
+isconverged(state, tol, minit) = state.n_it[] >= minit && !isempty(state.diffs) &&  state.diffs[end] < tol
 
 function ctm(A::AbstractTensor{S,4}, Asz::AbstractTensor{S,4}, χ::Int;
                                     Cinit::Union{Nothing, AbstractTensor{S,2}} = nothing,
@@ -61,12 +61,13 @@ Keywords:
 """
 function ctm_kernel(iter::AbstractCTMIterable,
                     state::Union{Nothing, AbstractCTMState} = nothing;
-                    tol::Float64 = 1e-13,
-                    maxit::Int = 5000,
-                    period::Int = 100,
+                    tol::Real = 1e-13,
+                    maxit::Integer = 5000,
+                    minit::Integer = 1,
+                    period::Integer = 100,
                     verbose::Bool = true,
                     obs = nothing)
-    stop(state) = isconverged(state,tol)
+    stop(state) = isconverged(state,tol,minit)
     function disp(state)
         ns = lpad(state[2].n_it[],7)
         ts = lpad(@sprintf("%.3E", state[1]/1e9), 13)
