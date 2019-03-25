@@ -14,8 +14,8 @@ calculates the propagator for ∑_i σx_i σx_i+1, i.e.
 according to Pirvu et al. 2010 _Matrix Product Operator Representations_
 """
 function oxxofβ(β, T = Float64)
-    σx = T[0 1; 1 0]
     id = T[1 0; 0 1]
+    σx = T[0 1; 1 0]
     C0 = T[cosh(β) 0; 0 sinh(β)]
     C1 = sqrt(T(sinh(β)*cosh(β))) .* σx
     @tensor mpoxx[p1,v1,p2,v2] := C0[v1,v2] * id[p1,p2] + C1[v1,v2] * σx[p1,p2]
@@ -37,11 +37,11 @@ end
 """
     tfisinghamiltonian([twobody = false, T = ComplexF64])
 return the MPO representing the Hamiltonian
-    H = ∑_i σx_i σx_i+1 + ∑_i σz_i
+    H = -∑_i σx_i σx_i+1 - ∑_i σz_i
 if `twobody=true`, return the two-body Hamiltonian
-    H = σx ⊗ σx + 1 ⊗ σz + σz ⊗ 1
+    H = -σx ⊗ σx - 1 ⊗ σz - σz ⊗ 1
 """
-function tfisinghamiltonian(twobody = false, T = Float64)
+function tfisinghamiltonian(twobody = false, λ=1, T = Float64)
     id = T[1 0; 0 1]
     σx = T[0 1; 1 0]
     σz = T[1 0; 0 -1]
@@ -50,7 +50,7 @@ function tfisinghamiltonian(twobody = false, T = Float64)
     h[:,1,:,1] = h[:,3,:,3] =  id
     h[:,1,:,2] =  σx
     h[:,2,:,3] = -σx
-    h[:,1,:,3] = -σz
+    h[:,1,:,3] = -λ*σz
     twobody || return h
 
     rb = DTensor([0,0,1])
@@ -86,6 +86,5 @@ end
 
 function tfisingctm(β,χ, h = 1;kwargs...)
     iter = transconjctmiterable(tfisingpropagator(β,h),χ)
-    obs = "E" => energy
-    return ctm_kernel(iter, obs = obs; kwargs...)
+    return ctm_kernel(iter; kwargs...)
 end
