@@ -49,11 +49,11 @@ using Test, CornerTransferMethods, TensorOperations, TensorNetworkTensors, Linea
         @test kron(-σx,σx) + kron(id,-σz) + kron(-σz,id) ≈ toarray(fuselegs(tfisinghamiltonian(true),((1,2),(3,4)))[1])
 
         sth0 = tfisingctm(1e-3, 8, 0, maxit=10^4, period = 10^2, verbose=false)
-        @test mag(sth0) ≈ 0
+        @test mag(sth0) ≈ 1
         @test energy(sth0) ≈ -1/2
 
         sth∞ = tfisingctm(1e-3, 8, 1e5, maxit=10^4, period = 10^2, verbose=false)
-        @test mag(sth∞) ≈ 1
+        @test isapprox(mag(sth∞), 0; atol=1e-20)
         @test energy(sth∞) ≈ -1
     end
 

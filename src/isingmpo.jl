@@ -1,6 +1,6 @@
 """
     ozofβ(β [, T = Float64])
-return propagator exp(β σx)
+return propagator exp(β σz)
 """
 function ozofβ(β, T = Float64)
     σz = T[1 0; 0 -1]
@@ -61,11 +61,11 @@ end
 
 function mag(st)
     C, T = st.C, st.Ts[1]
-    σz = DTensor([1 0; 0 -1])
+    σx = DTensor([0 1; 1  0])
     @tensor begin
         env[1,2] := C[-1,-2] * T[-2,2,-3] * conj(C)[-3,-4] *
                     C[-4,-5] * conj(T)[-5,1,-6] * conj(C)[-6,-1]
-        m = env[-1,-2] * σz[-1,-2]
+        m = env[-1,-2] * σx[-1,-2]
         n = env[-1,-1]
     end
     return m/n
