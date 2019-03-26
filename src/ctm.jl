@@ -5,6 +5,7 @@ abstract type AbstractCTMState end
 include("algorithms/nosym.jl")
 include("algorithms/rotsym.jl")
 include("algorithms/transpconjsymm.jl")
+include("algorithms/unitcell.jl")
 
 initializeC(A::DTensor{T}, χ) where T = DTensor(rand(T,χ, χ) .- 1)
 initializeT(A::DTensor{T}, χ, s = 1) where T = DTensor(rand(T,χ, size(A,s), χ) .-1)

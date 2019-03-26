@@ -3,11 +3,12 @@ import Base: iterate
 using Parameters: @unpack
 using Base.Iterators: take, enumerate, rest
 using Printf: @printf, @sprintf
-using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!, diag, norm
-using LinearAlgebra: diagm, ishermitian, eigen, pinv
+using LinearAlgebra: svdvals!, svd!, eigen!, Hermitian, normalize!, diag, norm,
+      diagm, ishermitian, eigen, pinv
 using KrylovKit: eigsolve
 using TensorNetworkTensors
 using TensorOperations: @tensor, scalar, checked_similar_from_indices, tensoradd!, tensorcopy, tensorcopy!
+using StaticArrays
 
 export ctm, magnetisation, isingenvironment, isingenvironmentz2
 export isingctm, isingctmz2, magofβ

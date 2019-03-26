@@ -74,4 +74,7 @@ using Test, CornerTransferMethods, TensorOperations, TensorNetworkTensors, Linea
                         rotsymstate.T, tcstate.Ts[1], tcstate.Ts[2]])
         @test all((x ≈ y for x in cls, y in cls))
     end
+
+    @testset "UnitCell" begin
+    end
 end
